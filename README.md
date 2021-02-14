@@ -13,7 +13,7 @@ The point of this plugin is to quickly show different associations of your CakeP
 `cd` to the root of your app folder (where the `composer.json` file is) and run the following command:
 
 ```
-composer require zunnu/AssociationsDebugger
+composer require zunnu/associations-debugger
 ```
 
 Then load the plugin by using CakePHP's console:
