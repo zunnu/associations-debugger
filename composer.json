@@ -1,5 +1,5 @@
 {
-    "name": "zunnu/AssociationsDebugger",
+    "name": "zunnu/associations-debugger",
     "description": "AssociationsDebugger plugin for CakePHP",
     "type": "cakephp-plugin",
     "license": "MIT",
