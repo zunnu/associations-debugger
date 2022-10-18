@@ -6,58 +6,8 @@
 </script>
 
 <?php
-	// build structure array
-	$structure = [];
-
-	foreach ($associationCollections as $pluginName => $plugin) {
-		if(!in_array($pluginName, $structure)) {
-			$structure[$pluginName] = [
-				'label' => $pluginName,
-				'type' => 'Plugin',
-				'parent' => null,
-				'style' => 'fill: lightblue !important;',
-			];
-		}
-		foreach ($plugin as $modelName => $model) {
-			$pluginAndModelName = $pluginName . '/' . $modelName;
-
-			if(!in_array($pluginAndModelName, $structure)) {
-				$structure[$pluginAndModelName] = [
-					'label' => $pluginAndModelName,
-					'type' => 'Model',
-					'parent' => $pluginName,
-					'style' => 'fill: #afa !important;',
-				];
-			}
-			foreach ($model as $associationType => $associations) {
-				// if(!in_array($associationType, $structure)) {
-				// 	$structure[$associationType] = [
-				// 		'label' => $associationType,
-				// 		'type' => 'AssociationType',
-				// 		'parent' => $pluginAndModelName,
-				// 		'style' => '',
-				// 	];
-				// }
-
-				foreach ($associations as $key => $association) {
-					$associationName = $association['target']['alias'] . ' (' . $association['target']['table'] . ')';
-					$source = $association['source']['alias'] . ' (' . $association['source']['table'] . ')';
-
-					if(!in_array($associationName . '-' . $associationType . '-' . $source, $structure)) {
-						$structure[$associationName . '-' . $associationType . '-' . $source] = [
-							'label' => $association['target']['location'] . '/' . $associationName,
-							'type' => 'Association',
-							'parent' => $pluginAndModelName,
-							'associationType' => $associationType,
-							'style' => '',
-							'lineStyle' => ''
-						];
-					}
-				}
-			}
-		}
-	}
-	// dd($structure);
+	$this->StructureBuilder = $this->loadHelper('AssociationsDebugger.StructureBuilder', ['showDeepChildren' => $showDeepChildren]);
+	$structure = $this->StructureBuilder->build($associationCollections);
 ?>
 
 <script type="text/javascript">
@@ -65,6 +15,14 @@
 		var structure = <?= json_encode($structure) ?>;
 	} else {
 		structure = <?= json_encode($structure) ?>;
+	}
+
+	function getNodeInfo(id) {
+		for (var key of Object.keys(structure)) {
+			if(key == id) {
+				return structure[key]
+			}
+		}
 	}
 
 	// create nodes
@@ -96,6 +54,43 @@
 
 	// Run the renderer. This is what draws the final graph.
 	render(svgGroup, g);
+
+    function nodeDetailsRequest(plugin, currentModel, targetModel, targetPlugin) {
+        var csrfToken = <?= json_encode($this->request->getParam('_csrfToken')) ?>;
+
+        return $.ajax({
+            type: "POST",
+            url: '<?= $this->Url->build([
+	            'plugin' => 'AssociationsDebugger',
+	            'controller' => 'Associations',
+	            'action' => 'details'
+            ]); ?>' + window.location.search,
+            data: {plugin: plugin, currentModel: currentModel, targetModel: targetModel, targetPlugin: targetPlugin},
+            headers: {
+                'X-CSRF-Token': csrfToken
+            },
+        });
+    }
+
+	svg.selectAll("g.node").on("click", function(id) {
+		var nodeInfo = getNodeInfo(id);
+		console.log(nodeInfo);
+		var request = nodeDetailsRequest(nodeInfo.plugin, nodeInfo.model, nodeInfo.associationTarget, nodeInfo.associationTargetPlugin);
+
+        request.done(function (data) {
+            // clear content from grid and add new content
+            $(document).find('#canvas').empty();
+            $(document).find('#canvas').html(data);
+
+        	// check if under association-debug index and update url
+			if (window.location.href.indexOf('/associations-debugger') > -1) {
+				var searchParam = {plugin: nodeInfo.plugin, currentModel: nodeInfo.model, targetModel: nodeInfo.associationTarget, targetPlugin: nodeInfo.associationTargetPlugin}
+				let buildParam = encodeURIComponent(JSON.stringify(searchParam))
+		        var url = window.updateQueryStringParameter(window.location.href, 'search', buildParam);
+		        window.history.pushState("", "", url)
+			}
+        })
+	});
 
 	//svg.attr("height", g.graph().height + 50);
 </script>

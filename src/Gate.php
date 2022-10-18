@@ -98,6 +98,7 @@ class Gate {
     // get associations
     private function getAssociations() {
         $associationsArray = [];
+        $modelList = [];
         $plugins = $this->getConfig('plugins');
 
         foreach ($this->getModels() as $pluginName => $models) {
@@ -109,10 +110,12 @@ class Gate {
                 // clean file name
                 $model = str_replace('.php', '', $model);
                 $model = str_replace('Table', '', $model);
+                $modelList[$model] = ['plugin' => $pluginName];
                 $associationsArray[$pluginName][$model] = $this->_associations($model, $pluginName);
             }
         }
 
+        $associationsArray = $this->_buildChildren($associationsArray, $modelList);
         return $associationsArray;
     }
 
@@ -162,18 +165,25 @@ class Gate {
                     $type .= ' (' . $this->associationTypes[$type] . ')';
                 }
 
+                // if($target->table() == 'cars') {
+                //     dd([$source, $target]);
+                // }
+
                 $associationsArray[$type][] = [
                     'source' => [
                         'table' => $source->table(),
                         'alias' => $source->alias(),
                         'connectionName' => $source->connection()->configName(),
                         'location' => $sourceRegistery,
+                        'model' => $model,
                     ],
                     'target' => [
                         'table' => $target->table(),
                         'alias' => $target->alias(),
                         'connectionName' => $target->connection()->configName(),
                         'location' => $targetRegistery,
+                        'model' => $this->convertTableName($target->registryAlias()),
+                        // 'model' => $this->convertTableName($target->entityClass()),
                     ]
                 ];
             }
@@ -255,5 +265,48 @@ class Gate {
         }
 
         return $loadedPlugins;
+    }
+
+    private function _buildChildren($plugins, $models) {
+        foreach ($plugins as $pluginName => $plugin) {
+            foreach ($plugin as $modelName => $model) {
+                foreach ($model as $associationType => $type) {
+                    foreach($type as $key => $association) {
+                        // dd($association);
+                        if(!empty($association['target']) && !empty($models[$association['target']['model']])) {
+                            $childTypes = $plugins[$models[$association['target']['model']]['plugin']][$association['target']['model']];
+
+                            if(!empty($childTypes)) {
+                                // if source is the same as the parent model do not show
+                                foreach($childTypes as $childTypeName => $childType) {
+                                    foreach($childType as $chK => $ch) {
+                                        if($ch['target']['model'] == $association['source']['model']) {
+                                            unset($childTypes[$childTypeName][$chK]);
+                                            continue;
+                                        }
+                                    }
+                                }
+
+                                $plugins[$pluginName][$modelName][$associationType][$key]['target']['childs'] = $childTypes;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $plugins;
+    }
+
+    private function convertTableName($entityName) {
+        if(strpos($entityName, '.') !== false) {
+            $entityName = substr($entityName, strrpos($entityName, '.') + 1);
+        }
+        
+        if(substr($entityName, -1) !== 's') {
+            $entityName = $entityName . 's';
+        }
+
+        return $entityName;
     }
 }
