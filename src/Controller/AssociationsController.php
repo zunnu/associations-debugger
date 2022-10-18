@@ -14,6 +14,11 @@ use AssociationsDebugger\Gate;
  */
 class AssociationsController extends AppController
 {
+    /**
+     * initialize method
+     *
+     * @return void
+     */
     public function initialize() {
         parent::initialize();
         $this->Gate = new Gate();
@@ -25,11 +30,11 @@ class AssociationsController extends AppController
     public function index() {
         $this->viewBuilder()->setLayout(false);
         $conditions = [];
-        $showDeepChildren = false;
+        $showDeepChildren = true;
         $search = [];
         $selectedTypes = [];
 
-        // SEARCH
+        // search
         if ($this->request->is('get')) {
             if(!empty($this->request->getQueryParams())) {
                 $data = $this->request->getQueryParams();
@@ -43,11 +48,12 @@ class AssociationsController extends AppController
         }
 
         $associations = $this->Gate->associations($conditions)->array();
-        $associationsCollection = $this->_parseSearch($associations, $data);
+        $associationsCollection = $this->_parseSearch($associations, (!empty($data) ? $data : []));
 
         $this->set('associationCollections', $associationsCollection);
-        $this->set('associationTypes', $this->Gate->getAssociationTypes());
+        $this->set('associationTypes', $this->Gate->associationTypes);
         $this->set('activePlugins', $this->Gate->getPlugins());
+        $this->set('loadedModels', $this->Gate->getLoadedModels());
         $this->set('showDeepChildren', $showDeepChildren);
         $this->set('selectedTypes', $selectedTypes);
 
@@ -65,10 +71,12 @@ class AssociationsController extends AppController
         $data = [];
         $associationsCollection = [];
         $conditions = [];
-        $showDeepChildren = false;
+        $showDeepChildren = true;
 
         if($this->request->is('ajax')) {
             $data = $this->request->getData();
+            $query = $this->request->getQueryParams();
+            $data = $data + $query;
 
             if(!empty($this->request->getQueryParams())) {
                 $conditions = $this->_parseConditions($this->request->getQueryParams());
@@ -79,11 +87,13 @@ class AssociationsController extends AppController
 
         if(!empty($data)) {
             $associations = $this->Gate->associations($conditions)->array();
-            $associationsCollection = $this->_parseSearch($associations, $data);
+            $associationsCollection = $this->_parseSearch($associations, (!empty($data) ? $data : []));
         }
 
+        if(!empty($data['deepChildren'])) $showDeepChildren = filter_var($data['deepChildren'], FILTER_VALIDATE_BOOLEAN);
+
         $this->set('associationCollections', $associationsCollection);
-        $this->set('associationTypes', $this->Gate->getAssociationTypes());
+        $this->set('associationTypes', $this->Gate->associationTypes);
         $this->set('activePlugins', $this->Gate->getPlugins());
         $this->set('showDeepChildren', $showDeepChildren);
 
@@ -92,7 +102,15 @@ class AssociationsController extends AppController
         // }
     }
 
+    /**
+     * Filter associations with target model, target plugin etc
+     * @param  array $associations List of associations
+     * @param  array $data         Data from the ui, including target model, target plugin
+     * @return array               Filtered data
+     */
     private function _parseSearch($associations, $data) {
+        $associationsCollection = [];
+
         if(!empty($data['targetPlugin']) && !empty($data['targetModel'])) {
             if(!empty($associations[$data['targetPlugin']][$data['targetModel']])) {
                 $associationsCollection = [
@@ -126,6 +144,11 @@ class AssociationsController extends AppController
         return $associationsCollection;
     }
 
+    /**
+     * Format conditions
+     * @param  array $data Ui data to be formated
+     * @return array       Formated version of conditions
+     */
     private function _parseConditions($data) {
         $conditions = [];
 

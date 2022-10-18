@@ -33,4 +33,7 @@
 <!-- draw area -->
 <svg id="canvas" width="100%" height="100%"></svg>
 
-<?= $this->element('AssociationsDebugger.associationTree', ['associationCollections' => $associationCollections]) ?>
+<?= $this->element('AssociationsDebugger.associationTree', [
+	'associationCollections' => $associationCollections,
+	// 'hideChildren' => true
+]) ?>

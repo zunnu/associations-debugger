@@ -74,7 +74,6 @@
 
 	svg.selectAll("g.node").on("click", function(id) {
 		var nodeInfo = getNodeInfo(id);
-		console.log(nodeInfo);
 		var request = nodeDetailsRequest(nodeInfo.plugin, nodeInfo.model, nodeInfo.associationTarget, nodeInfo.associationTargetPlugin);
 
         request.done(function (data) {

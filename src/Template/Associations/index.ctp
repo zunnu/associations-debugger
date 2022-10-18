@@ -92,17 +92,22 @@
 	input:checked + .switch:active::before {
 	    box-shadow: 0 2px 8px rgba(0,0,0,0.28), 0 0 0 20px rgba(0,150,136,0.2);
 	}
+
+	.btn-group .show {
+		width: 65%;
+	}
 </style>
 
 <body>
 	<div class="container mb-4">
 		<div class="row">
 		    <?= $this->Form->control('associationTypes', ['label' => 'Association types', 'required' => false, 'options' => $associationTypes, 'multiple' => true, 'default' => $selectedTypes, 'id' => 'associationTypes', 'class' => 'form-control', 'templates' => [
-		        'inputContainer' => '<div class="form-group col-md-4 mt-4">{{content}}</div>'
+		        'inputContainer' => '<div class="form-group col-md-6 mt-4">{{content}}</div>'
 		    ]]); ?>
 
-		    <div class="form-group col-md-4 mt-4">
-				<span>Show deep children?</span>
+
+		    <div class="form-group col-md-4 mt-4 tooltip-container">
+				<span>Show deep children</span><button class="btn btn-info" data-toggle="tooltip" data-original-title="Turning this off will help with the performance but show less results">?</button>
 				<input name="deepChildren" type="checkbox" hidden="hidden" id="deep-children" <?= $showDeepChildren ? 'checked' : '' ?>>
 				<label class="switch mt-2" for="deep-children"></label>
 			</div>
@@ -115,6 +120,11 @@
 
 <script type="text/javascript">
     $(function () {
+	    $('[data-toggle="tooltip"]').tooltip({
+	        placement: 'bottom',
+	        container: '.tooltip-container'
+	    });
+
         $("#plugins").multiselect({
             // includeSelectAllOption: true
         });

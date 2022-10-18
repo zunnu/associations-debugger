@@ -53,6 +53,11 @@ class StructureBuilderHelper extends Helper
         return $this->structure;
     }
 
+    /**
+     * Main build entry. Handles formating the data
+     * @param  array $associationCollections  Collection from the gate
+     * @return array                          Formated data
+     */
     public function build($associationCollections) {
         if(empty($associationCollections)) return $this->structure;
 
@@ -139,6 +144,12 @@ class StructureBuilderHelper extends Helper
         return $this->structure;
     }
 
+    /**
+     * Handle the children of the collections
+     * @param  array $childs
+     * @param  integer $parentNumber The parent number that the childs will be attached to
+     * @return array                Data with children
+     */
     protected function _parseChilds($childs, $parentNumber) {
         $structure = [];
 
