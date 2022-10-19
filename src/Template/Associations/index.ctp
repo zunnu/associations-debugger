@@ -94,23 +94,50 @@
 	}
 
 	.btn-group .show {
-		width: 65%;
+		/*width: 65%;*/
 	}
 </style>
 
 <body>
 	<div class="container mb-4">
 		<div class="row">
-		    <?= $this->Form->control('associationTypes', ['label' => 'Association types', 'required' => false, 'options' => $associationTypes, 'multiple' => true, 'default' => $selectedTypes, 'id' => 'associationTypes', 'class' => 'form-control', 'templates' => [
-		        'inputContainer' => '<div class="form-group col-md-6 mt-4">{{content}}</div>'
-		    ]]); ?>
+		    <?= $this->Form->control('associationTypes', [
+		    	'label' => [
+		    		'text' => 'Association types',
+		    		'style' => 'display: block'
+		    	],
+		    	'required' => false,
+		    	'options' => $associationTypes,
+		    	'multiple' => true,
+		    	'default' => $selectedTypes,
+		    	'id' => 'associationTypes',
+		    	'class' => 'form-control',
+		    	'templates' => [
+		        	'inputContainer' => '<div class="form-group col-md-3 mt-4">{{content}}</div>'
+		    	]
+		    ]); ?>
 
-
-		    <div class="form-group col-md-4 mt-4 tooltip-container">
-				<span>Show deep children</span><button class="btn btn-info" data-toggle="tooltip" data-original-title="Turning this off will help with the performance but show less results">?</button>
+		    <div class="form-group col-md-3 tooltip-container" style="padding-top: 3.3rem;">
+				<span>Show deep children <button class="btn btn-info" data-toggle="tooltip" data-original-title="Turning this off will help with the performance but show less results">?</button></span>
 				<input name="deepChildren" type="checkbox" hidden="hidden" id="deep-children" <?= $showDeepChildren ? 'checked' : '' ?>>
 				<label class="switch mt-2" for="deep-children"></label>
 			</div>
+
+		    <?= $this->Form->control('search', [
+		    	'label' => [
+		    		'text' => 'Search',
+		    		'style' => 'display: block'
+		    	],
+		    	'required' => false,
+		    	'options' => $assocationSearchSelect,
+		    	'default' => $selectedNode,
+		    	'id' => 'general-search',
+		    	'multiple' => false,
+		    	'class' => 'form-control',
+		    	'templates' => [
+		        	'inputContainer' => '<div class="form-group col-md-3 mt-4">{{content}}</div>'
+		    	]
+		    ]); ?>
 		</div>
 	</div>
 
@@ -125,8 +152,36 @@
 	        container: '.tooltip-container'
 	    });
 
-        $("#plugins").multiselect({
-            // includeSelectAllOption: true
+        $('#general-search').multiselect({
+            enableClickableOptGroups: true,
+            enableCollapsibleOptGroups: true,
+            enableFiltering: true,
+            filterBehavior: 'value',
+            enableFullValueFiltering: false,
+            maxHeight: 400,
+            onChange: function(option, checked, select) {
+                var value = option.val();
+                value = value.split('-');
+
+                // for root selection show all
+                if(value[0] == 'Root') {
+                	value[0] = '';
+                	value[1] = '';
+                }
+
+				var searchParam = {targetPlugin: value[0], targetModel: value[1]}
+				let buildParam = encodeURIComponent(JSON.stringify(searchParam))
+		        var url = window.updateQueryStringParameter(window.location.href, 'search', buildParam);
+		        history.replaceState(null, null, url);
+
+		        var request = updateGridRequest(url);
+
+		        request.done(function (data) {
+		            // clear content from grid and add new content
+		            $(document).find('#canvas').empty();
+		            $(document).find('#canvas').html(data);
+		        })
+            },
         });
 
          $("#associationTypes").multiselect({
@@ -155,32 +210,32 @@
 			}
 		}
 
-		$("#plugins").change(function () { 
-			var params = {};
-		    var str = "";
-		    var url = "";     
-            var select = $('#plugins');
+		// $("#plugins").change(function () { 
+		// 	var params = {};
+		//     var str = "";
+		//     var url = "";     
+  //           var select = $('#plugins');
 
-            if (select.val() != '') {
-                var selected = select.val();
+  //           if (select.val() != '') {
+  //               var selected = select.val();
 
-                if (select.attr('multiple')) {
-                    selected = selected.join(',');
-                }
+  //               if (select.attr('multiple')) {
+  //                   selected = selected.join(',');
+  //               }
 
-            }
+  //           }
 
-	        // refresh grid
-	        url = window.updateQueryStringParameter(window.location.href, 'plugins', selected);
-	        window.history.pushState("", "", url)
-	        var request = updateGridRequest(url);
+	 //        // refresh grid
+	 //        url = window.updateQueryStringParameter(window.location.href, 'plugins', selected);
+	 //        window.history.pushState("", "", url)
+	 //        var request = updateGridRequest(url);
 
-	        request.done(function (data) {
-	            // clear content from grid and add new content
-	            $(document).find('#canvas').empty();
-	            $(document).find('#canvas').html(data);
-	        })
-		});
+	 //        request.done(function (data) {
+	 //            // clear content from grid and add new content
+	 //            $(document).find('#canvas').empty();
+	 //            $(document).find('#canvas').html(data);
+	 //        })
+		// });
 
 		$("#associationTypes").change(function() { 
 			var params = {};

@@ -86,7 +86,23 @@
 				var searchParam = {plugin: nodeInfo.plugin, currentModel: nodeInfo.model, targetModel: nodeInfo.associationTarget, targetPlugin: nodeInfo.associationTargetPlugin}
 				let buildParam = encodeURIComponent(JSON.stringify(searchParam))
 		        var url = window.updateQueryStringParameter(window.location.href, 'search', buildParam);
-		        window.history.pushState("", "", url)
+		        history.replaceState(null, null, url);
+
+		        var plugin = nodeInfo.associationTargetPlugin;
+		        if(!plugin) {
+		        	plugin = nodeInfo.plugin;
+		        }
+
+		        var model = nodeInfo.associationTarget;
+		        if(!model) {
+		        	model = nodeInfo.model;
+		        }
+
+		        if(!plugin) {
+		        	$('#general-search').multiselect('select', 'Root', true);
+		        } else {
+		        	$('#general-search').multiselect('select', plugin + (model ? '-' + model : ''), true);
+		        }
 			}
         })
 	});

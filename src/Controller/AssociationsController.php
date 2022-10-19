@@ -53,9 +53,32 @@ class AssociationsController extends AppController
         $this->set('associationCollections', $associationsCollection);
         $this->set('associationTypes', $this->Gate->associationTypes);
         $this->set('activePlugins', $this->Gate->getPlugins());
-        $this->set('loadedModels', $this->Gate->getLoadedModels());
-        $this->set('showDeepChildren', $showDeepChildren);
-        $this->set('selectedTypes', $selectedTypes);
+
+        $selectedNode = 'Root';
+        if(!empty($data['targetPlugin'])) {
+            if(!empty($data['targetModel'])) {
+                $selectedNode = $data['targetPlugin'] . '-' . $data['targetModel'];
+            } else {
+                $selectedNode = $data['targetPlugin'];
+            }
+        }
+
+        $assocationSearchSelect = ['Root' => 'Root'];
+        foreach($associations as $plugin => $assocation) {
+            $keys = array_keys($assocation);
+            $first = true;
+
+            foreach($keys as $k) {
+                if($first) {
+                    $first = false;
+                    $assocationSearchSelect[$plugin][$plugin] = $plugin . ' (plugin)';
+                }
+
+                $assocationSearchSelect[$plugin][$plugin . '-' . $k] = $k;
+            }
+        }
+
+        $this->set(compact('assocationSearchSelect', 'showDeepChildren', 'selectedTypes', 'selectedNode'));
 
         if($this->request->is('ajax')) {
             $this->render('Element/associationTree');
@@ -118,8 +141,12 @@ class AssociationsController extends AppController
                         $data['targetModel'] => $associations[$data['targetPlugin']][$data['targetModel']]
                     ]
                 ];
-
-                $showDeepChildren = true;
+            }
+        } elseif(!empty($data['targetPlugin']) && empty($data['targetModel'])) {
+            if(!empty($associations[$data['targetPlugin']])) {
+                $associationsCollection = [
+                    $data['targetPlugin'] => $associations[$data['targetPlugin']]
+                ];
             }
         } elseif(!empty($data['plugin']) && !empty($data['currentModel'])) {
             if(!empty($associations[$data['plugin']][$data['currentModel']])) {
@@ -128,8 +155,6 @@ class AssociationsController extends AppController
                         $data['currentModel'] => $associations[$data['plugin']][$data['currentModel']]
                     ]
                 ];
-
-                $showDeepChildren = true;
             }
         } elseif(!empty($data['plugin']) && empty($data['currentModel'])) {
             if(!empty($associations[$data['plugin']])) {
