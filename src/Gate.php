@@ -14,19 +14,36 @@ use Cake\Core\Plugin;
 use Cake\Cache\Cache;
 
 class Gate {
-    // prefixes
-    protected $prefixes = [];
-
-    // routes
-    protected $routes = [];
-
-    // plugins
+    /**
+     * List of loaded plugins
+     * @var array
+     */
     protected $plugins = [];
 
+    /**
+     * List of found
+     * @var array
+     */
+    protected $models = [];
+
+    /**
+     * Config of the gate
+     * Options:
+     *   associationTypes: List of associations types to filter by
+     * @var array
+     */
     protected $config = [];
 
+    /**
+     * List of associations
+     * @var array
+     */
     public $associations = [];
 
+    /**
+     * List of available types
+     * @var [type]
+     */
     public $associationTypes = [
         'oneToMany' => 'hasMany',
         'oneToOne' => 'hasOne',
@@ -34,10 +51,10 @@ class Gate {
         'manyToMany' => 'belongsToMany',
     ];
 
-    public function __construct() {
-        $this->setRoutes();
-    }
-
+    /**
+     * Set the plugins to scope
+     * This will also set "App" as a plugin
+     */
     public function setPlugins() {
         $pluginConfig = $this->getConfig('plugins');
         $plugins = Plugin::loaded();
@@ -60,11 +77,19 @@ class Gate {
         $this->plugins = $plugins;
     }
 
-    // get routes
-    public function setRoutes() {
-        $this->routes = Router::routes();
+    /**
+     * Return the list of found models in the whole app
+     * @return array
+     */
+    public function getLoadedModels() {
+        return $this->models;
     }
 
+    /**
+     * Main associations fetch method
+     * @param  array  $conditions List of filter conditions
+     * @return object             Current class object             
+     */
     public function associations($conditions = []) {
         $this->setConfig($conditions);
         $this->setPlugins();
@@ -73,31 +98,29 @@ class Gate {
         return $this;
     }
 
-    // return data as json
+    /**
+     * Return the associations data as json by using chaining
+     * @return string
+     */
     public function json() {
         return json_encode($this->associations);
     }
 
-    // return data as array
+    /**
+     * Return the associations data as array by using chaining
+     * @return array
+     */
     public function array() {
         return $this->associations;
     }
 
-    // private function buildAssociations() {
-    //     $associationsArray = [];
-    //     dd($this->getAssociations());
-
-    //     foreach ($this->getAssociations() as $pluginName => $associations) {
-    //         foreach ($associations as $key => $association) {
-    //             dd($associations->get('Users'));
-
-    //         }
-    //     }
-    // }
-
-    // get associations
+    /**
+     * Get the list of assocations
+     * @return array List of associations
+     */
     private function getAssociations() {
         $associationsArray = [];
+        $modelList = [];
         $plugins = $this->getConfig('plugins');
 
         foreach ($this->getModels() as $pluginName => $models) {
@@ -109,14 +132,22 @@ class Gate {
                 // clean file name
                 $model = str_replace('.php', '', $model);
                 $model = str_replace('Table', '', $model);
+                $modelList[$model] = ['plugin' => $pluginName];
                 $associationsArray[$pluginName][$model] = $this->_associations($model, $pluginName);
             }
         }
 
+        $this->models = $modelList;
+        $associationsArray = $this->_buildChildren($associationsArray, $modelList);
         return $associationsArray;
     }
 
-    // return list of associations
+    /**
+     * Worker for getAssociations
+     * @param  string $model  Model name
+     * @param  string $plugin Set only if model is under plugin
+     * @return array         Specific model associations
+     */
     private function _associations($model, $plugin = null) {
         $associationTypes = $this->getConfig('associationTypes');
 
@@ -168,12 +199,15 @@ class Gate {
                         'alias' => $source->alias(),
                         'connectionName' => $source->connection()->configName(),
                         'location' => $sourceRegistery,
+                        'model' => $model,
                     ],
                     'target' => [
                         'table' => $target->table(),
                         'alias' => $target->alias(),
                         'connectionName' => $target->connection()->configName(),
                         'location' => $targetRegistery,
+                        'model' => $this->convertTableName($target->registryAlias()),
+                        // 'model' => $this->convertTableName($target->entityClass()),
                     ]
                 ];
             }
@@ -185,7 +219,11 @@ class Gate {
         return false;
     }
  
-    // return the path to the model dir
+    /**
+     * Get the path to the model directory
+     * @param  string $plugin Plugin name, if not a plugin the plugin name will be App
+     * @return string         Path to model dir
+     */
     private function getPath($plugin) {
         if (!$plugin || $plugin == 'App') {
             $path = App::path('Model/Table');
@@ -196,6 +234,10 @@ class Gate {
         return $path;
     }
 
+    /**
+     * Get the list of the models of the whole app
+     * @return array
+     */
     private function getModels() {
         // get app models
         $holder['App'] = $this->_models();
@@ -208,6 +250,11 @@ class Gate {
         return $holder;
     }
 
+    /**
+     * Worker for getModels
+     * @param  string $plugin Plugin name where to search the models from
+     * @return array          List of tables
+     */
     private function _models($plugin = null) {
         // find the models
         $path = $this->getPath($plugin);
@@ -216,7 +263,11 @@ class Gate {
         return $models;
     }
 
-    private function setConfig($conditions) {
+    /**
+     * Set config for the gate
+     * @param array $conditions
+     */
+    public function setConfig($conditions) {
         if(!empty($conditions['associationTypes'])) {
             $this->config['associationTypes'] = $conditions['associationTypes'];
         } else {
@@ -234,7 +285,12 @@ class Gate {
         }
     }
 
-    private function getConfig($arrayName = null) {
+    /**
+     * Get the gate config
+     * @param  string $arrayName Key of the config
+     * @return array
+     */
+    public function getConfig($arrayName = null) {
         if(empty($arrayName)) {
             return $this->config;
         } else {
@@ -242,10 +298,10 @@ class Gate {
         }
     }
 
-    public function getAssociationTypes() {
-        return $this->associationTypes;
-    }
-
+    /**
+     * Get the list of loaded plugins
+     * @return array
+     */
     public function getPlugins() {
         $plugins = Plugin::loaded();
         $loadedPlugins = [];
@@ -255,5 +311,59 @@ class Gate {
         }
 
         return $loadedPlugins;
+    }
+
+    /**
+     * Worker for getAssociations
+     * adds the children to association list
+     * @param  array $plugins List of associations inside "plugins"
+     * @param  array $models  List of models
+     * @return array          Associations with children
+     */
+    private function _buildChildren($plugins, $models) {
+        foreach ($plugins as $pluginName => $plugin) {
+            foreach ($plugin as $modelName => $model) {
+                foreach ($model as $associationType => $type) {
+                    foreach($type as $key => $association) {
+                        if(!empty($association['target']) && !empty($models[$association['target']['model']])) {
+                            $childTypes = $plugins[$models[$association['target']['model']]['plugin']][$association['target']['model']];
+
+                            if(!empty($childTypes)) {
+                                // if source is the same as the parent model do not show
+                                foreach($childTypes as $childTypeName => $childType) {
+                                    foreach($childType as $chK => $ch) {
+                                        if($ch['target']['model'] == $association['source']['model']) {
+                                            unset($childTypes[$childTypeName][$chK]);
+                                            continue;
+                                        }
+                                    }
+                                }
+
+                                $plugins[$pluginName][$modelName][$associationType][$key]['target']['childs'] = $childTypes;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $plugins;
+    }
+
+    /**
+     * Format the table name
+     * @param  string $modelName Name of the model
+     * @return string              Formated name
+     */
+    private function convertTableName($modelName) {
+        if(strpos($modelName, '.') !== false) {
+            $modelName = substr($modelName, strrpos($modelName, '.') + 1);
+        }
+        
+        if(substr($modelName, -1) !== 's') {
+            $modelName = $modelName . 's';
+        }
+
+        return $modelName;
     }
 }
