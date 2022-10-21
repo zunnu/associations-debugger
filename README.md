@@ -5,7 +5,7 @@ The point of this plugin is to quickly show different associations of your CakeP
 
 
 ## Requirements
-* CakePHP 3.x
+* CakePHP 4.x
 * PHP 7.2 >
 
 ## Installing Using [Composer][composer]
