@@ -1,8 +1,11 @@
-# AssociationsDebugger plugin for CakePHP
+# AssociationsDebugger plugin for [CakePHP][cakephp]
 
-AssociationsDebugger is a simple plugin that is made for debugging associations.
+AssociationsDebugger is a plugin that is made for debugging associations.
 The point of this plugin is to quickly show different associations of your CakePHP application without you needing to browse through the model files.
 
+CakePHP 3.x version can be found [here](https://github.com/zunnu/associations-debugger/tree/3.x)
+
+![Example](https://i.giphy.com/media/LylyHkulR8xTpDrapb/giphy.webp)
 
 ## Requirements
 * CakePHP 4.x
@@ -13,19 +16,24 @@ The point of this plugin is to quickly show different associations of your CakeP
 `cd` to the root of your app folder (where the `composer.json` file is) and run the following command:
 
 ```
-composer require zunnu/associations-debugger
+composer require --dev zunnu/associations-debugger
 ```
-
 Then load the plugin by using CakePHP's console:
 
 ```
 ./bin/cake plugin load AssociationsDebugger
 ```
 
+This plugin is not needed in production enviroment so it's recomended to be loaded using
+```
+$this->addOptionalPlugin('AssociationsDebugger');
+```
+To see the Associations panel in DebugKit this plugin needs to be loaded before DebugKit
+
 ## Usage
 You can see the tree by going to
 http://app-address/associations-debugger
-Here you can filter by **association type**.
+Here you can filter by **association type and model**.
 <img src="https://i.imgur.com/aEqreKN.png" alt="Tree">
 
 This same tree can be also viewed in the CakePHP debugKit.
