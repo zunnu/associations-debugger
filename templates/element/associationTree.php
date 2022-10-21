@@ -6,6 +6,7 @@
 </script>
 
 <?php
+	if(!isset($showDeepChildren)) $showDeepChildren = true;
 	$this->StructureBuilder = $this->loadHelper('AssociationsDebugger.StructureBuilder', ['showDeepChildren' => $showDeepChildren]);
 	$structure = $this->StructureBuilder->build($associationCollections);
 ?>
@@ -56,7 +57,7 @@
 	render(svgGroup, g);
 
     function nodeDetailsRequest(plugin, currentModel, targetModel, targetPlugin) {
-        var csrfToken = <?= json_encode($this->request->getParam('_csrfToken')) ?>;
+        var csrfToken = <?= json_encode($this->request->getAttribute('csrfToken')) ?>;
 
         return $.ajax({
             type: "POST",
@@ -97,6 +98,9 @@
 		        if(!model) {
 		        	model = nodeInfo.model;
 		        }
+
+		        $('#general-search').removeAttr("checked");
+		        $('#general-search').multiselect('deselectAll');
 
 		        if(!plugin) {
 		        	$('#general-search').multiselect('select', 'Root', true);

@@ -19,7 +19,8 @@ class AssociationsController extends AppController
      *
      * @return void
      */
-    public function initialize() {
+    public function initialize(): void
+    {
         parent::initialize();
         $this->Gate = new Gate();
     }
@@ -27,8 +28,9 @@ class AssociationsController extends AppController
     /**
      * Index method
      */
-    public function index() {
-        $this->viewBuilder()->setLayout(false);
+    public function index()
+    {
+        $this->viewBuilder()->disableAutoLayout();
         $conditions = [];
         $showDeepChildren = true;
         $search = [];
@@ -81,7 +83,7 @@ class AssociationsController extends AppController
         $this->set(compact('assocationSearchSelect', 'showDeepChildren', 'selectedTypes', 'selectedNode'));
 
         if($this->request->is('ajax')) {
-            $this->render('Element/associationTree');
+            $this->render('element/associationTree');
         }
     }
 
@@ -89,8 +91,9 @@ class AssociationsController extends AppController
      * Details methdod
      * Will return more details about the selected association tree
      */
-    public function details() {
-        $this->viewBuilder()->setLayout(false);
+    public function details()
+    {
+        $this->viewBuilder()->disableAutoLayout();
         $data = [];
         $associationsCollection = [];
         $conditions = [];
@@ -121,7 +124,7 @@ class AssociationsController extends AppController
         $this->set('showDeepChildren', $showDeepChildren);
 
         // if($this->request->is('ajax')) {
-            $this->render('Element/associationTree');
+            $this->render('element/associationTree');
         // }
     }
 
@@ -131,7 +134,8 @@ class AssociationsController extends AppController
      * @param  array $data         Data from the ui, including target model, target plugin
      * @return array               Filtered data
      */
-    private function _parseSearch($associations, $data) {
+    private function _parseSearch($associations, $data): array
+    {
         $associationsCollection = [];
 
         if(!empty($data['targetPlugin']) && !empty($data['targetModel'])) {
@@ -174,7 +178,8 @@ class AssociationsController extends AppController
      * @param  array $data Ui data to be formated
      * @return array       Formated version of conditions
      */
-    private function _parseConditions($data) {
+    private function _parseConditions($data): array
+    {
         $conditions = [];
 
         if(!empty($data['plugins']) && $data['plugins'] !== 'undefined') {

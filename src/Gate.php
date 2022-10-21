@@ -162,30 +162,30 @@ class Gate {
 
         if($associations = $setModel->associations()) {
             foreach ($associations->normalizeKeys($associations->getIterator()) as $key => $association) {
-                $source = $association->source();
-
-                try {
-                    $target = $association->target();
-                } catch (\Exception $e) {
-                    $association->target()->setRegistryAlias(ucfirst($association->getProperty()) . $association->getName());
-                    $association->target()->setAlias(ucfirst($association->getProperty()) . $association->getName());
-                    $association->setName(ucfirst($association->getProperty()) . $association->getName());
-                    $target = $association->target();
-                }
-
+                $source = $association->getSource();
                 $sourceRegistery = 'App';
                 $targetRegistery = 'App';
 
-                if(strpos($source->registryAlias(), '.') !== false) {
-                    $sourceRegistery = strtok($source->registryAlias(), '.');
+                // error handling for association registeration
+                try {
+                    $target = $association->getTarget();
+                } catch (\Exception $e) {
+                    $association->getTarget()->setRegistryAlias(ucfirst($association->getProperty()) . $association->getName());
+                    $association->getTarget()->setAlias(ucfirst($association->getProperty()) . $association->getName());
+                    $association->setName(ucfirst($association->getProperty()) . $association->getName());
+                    $target = $association->getTarget();
+                }
+
+                if(strpos($source->getRegistryAlias(), '.') !== false) {
+                    $sourceRegistery = strtok($source->getRegistryAlias(), '.');
 
                     if($sourceRegistery !== 'App' && !in_array(strtolower($sourceRegistery), $activePluginsLower)) {
                         $sourceRegistery = 'App';
                     }
                 }
 
-                if(strpos($source->registryAlias(), '.') !== false) {
-                    $targetRegistery = strtok($target->registryAlias(), '.');
+                if(strpos($source->getRegistryAlias(), '.') !== false) {
+                    $targetRegistery = strtok($target->getRegistryAlias(), '.');
 
                     if($targetRegistery !== 'App' && !in_array(strtolower($targetRegistery), $activePluginsLower)) {
                         $targetRegistery = 'App';
@@ -204,18 +204,18 @@ class Gate {
 
                 $associationsArray[$type][] = [
                     'source' => [
-                        'table' => $source->table(),
-                        'alias' => $source->alias(),
-                        'connectionName' => $source->connection()->configName(),
+                        'table' => $source->getTable(),
+                        'alias' => $source->getAlias(),
+                        'connectionName' => $source->getConnection()->configName(),
                         'location' => $sourceRegistery,
                         'model' => $model,
                     ],
                     'target' => [
-                        'table' => $target->table(),
-                        'alias' => $target->alias(),
-                        'connectionName' => $target->connection()->configName(),
+                        'table' => $target->getTable(),
+                        'alias' => $target->getAlias(),
+                        'connectionName' => $target->getConnection()->configName(),
                         'location' => $targetRegistery,
-                        'model' => $this->convertTableName($target->registryAlias()),
+                        'model' => $this->convertTableName($target->getRegistryAlias()),
                         // 'model' => $this->convertTableName($target->entityClass()),
                     ]
                 ];
@@ -235,9 +235,9 @@ class Gate {
      */
     private function getPath($plugin) {
         if (!$plugin || $plugin == 'App') {
-            $path = App::path('Model/Table');
+            $path = App::classPath('Model/Table');
         } else {
-            $path = App::path('Model/Table', $plugin);
+            $path = App::classPath('Model/Table', $plugin);
         }
 
         return $path;
