@@ -163,9 +163,18 @@ class Gate {
         if($associations = $setModel->associations()) {
             foreach ($associations->normalizeKeys($associations->getIterator()) as $key => $association) {
                 $source = $association->getSource();
-                $target = $association->getTarget();
                 $sourceRegistery = 'App';
                 $targetRegistery = 'App';
+
+                // error handling for association registeration
+                try {
+                    $target = $association->getTarget();
+                } catch (\Exception $e) {
+                    $association->getTarget()->setRegistryAlias(ucfirst($association->getProperty()) . $association->getName());
+                    $association->getTarget()->setAlias(ucfirst($association->getProperty()) . $association->getName());
+                    $association->setName(ucfirst($association->getProperty()) . $association->getName());
+                    $target = $association->getTarget();
+                }
 
                 if(strpos($source->getRegistryAlias(), '.') !== false) {
                     $sourceRegistery = strtok($source->getRegistryAlias(), '.');
