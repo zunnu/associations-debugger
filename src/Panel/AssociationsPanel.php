@@ -2,11 +2,13 @@
 declare(strict_types=1);
 
 namespace AssociationsDebugger\Panel;
-use DebugKit\DebugPanel;
-use AssociationsDebugger\Gate;
 
-class AssociationsPanel extends DebugPanel {
-	public $plugin = 'AssociationsDebugger';
+use AssociationsDebugger\Gate;
+use DebugKit\DebugPanel;
+
+class AssociationsPanel extends DebugPanel
+{
+    public $plugin = 'AssociationsDebugger';
 
     /**
      * Get the panel data
@@ -15,7 +17,7 @@ class AssociationsPanel extends DebugPanel {
      */
     public function data()
     {
-    	$gate = new Gate();
+        $gate = new Gate();
 
         return [
             'associationCollections' => $gate->associations()->array(),

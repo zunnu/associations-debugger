@@ -1,8 +1,9 @@
 <?php
+declare(strict_types=1);
+
 namespace AssociationsDebugger\View\Helper;
 
 use Cake\View\Helper;
-use Cake\View\View;
 
 /**
  * StructureBuilder helper
@@ -20,6 +21,7 @@ class StructureBuilderHelper extends Helper
 
     /**
      * Holder for structure that will be drawn
+     *
      * @var array
      */
     protected $structure = [
@@ -35,38 +37,46 @@ class StructureBuilderHelper extends Helper
 
     /**
      * Core names that have been handled already. Basicly contains "App" and plugin names
+     *
      * @var array
      */
     protected $handledNames = [];
 
     /**
      * Running number to build unique identifiers and link to parents
-     * @var integer
+     *
+     * @var int
      */
     protected $count = 1;
 
     /**
      * Return the current stucture holder
+     *
      * @return array
      */
-    public function getStructure() {
+    public function getStructure()
+    {
         return $this->structure;
     }
 
     /**
      * Main build entry. Handles formating the data
+     *
      * @param  array $associationCollections  Collection from the gate
      * @return array                          Formated data
      */
-    public function build($associationCollections) {
-        if(empty($associationCollections)) return $this->structure;
+    public function build($associationCollections)
+    {
+        if (empty($associationCollections)) {
+            return $this->structure;
+        }
 
         $childs = [];
         foreach ($associationCollections as $pluginName => $plugin) {
             ++$this->count;
             $pluginNumber = $this->count;
 
-            if(!in_array($pluginName, $this->handledNames)) {
+            if (!in_array($pluginName, $this->handledNames)) {
                 $this->handledNames[] = $pluginName;
 
                 $this->structure[$pluginNumber] = [
@@ -84,7 +94,7 @@ class StructureBuilderHelper extends Helper
                 $pluginAndModelNumber = $this->count;
                 $pluginAndModelName = $pluginName . '/' . $modelName;
 
-                if(!in_array($pluginAndModelName, $this->handledNames)) {
+                if (!in_array($pluginAndModelName, $this->handledNames)) {
                     $this->handledNames[] = $pluginAndModelName;
 
                     $this->structure[$pluginAndModelNumber] = [
@@ -108,7 +118,7 @@ class StructureBuilderHelper extends Helper
                         $target = $association['target'];
                         $associationBuildName = $associationName . '-' . $associationType . '-' . $source;
 
-                        if(!in_array($associationBuildName, $this->handledNames)) {
+                        if (!in_array($associationBuildName, $this->handledNames)) {
                             $this->handledNames[] = $associationBuildName;
 
                             $this->structure[$associationNumber] = [
@@ -122,21 +132,21 @@ class StructureBuilderHelper extends Helper
                                 'plugin' => $pluginName,
                                 'model' => $modelName,
                                 'associationTarget' => $association['target']['model'],
-                                'associationTargetPlugin' => $association['target']['location']
+                                'associationTargetPlugin' => $association['target']['location'],
                             ];
                         }
 
-                        if(!empty($target['childs'])) {
+                        if (!empty($target['childs'])) {
                             $childs[$associationNumber] = $target['childs'];
                         }
                     }
                 }
             }
         }
-        
+
         // add childs
-        if(!empty($childs) && empty($hideChildren)) {
-            foreach($childs as $parentNumber => $child) {
+        if (!empty($childs) && empty($hideChildren)) {
+            foreach ($childs as $parentNumber => $child) {
                 $this->structure = $this->structure + $this->_parseChilds($child, $parentNumber);
             }
         }
@@ -146,15 +156,17 @@ class StructureBuilderHelper extends Helper
 
     /**
      * Handle the children of the collections
+     *
      * @param  array $childs
-     * @param  integer $parentNumber The parent number that the childs will be attached to
+     * @param int $parentNumber The parent number that the childs will be attached to
      * @return array                Data with children
      */
-    protected function _parseChilds($childs, $parentNumber) {
+    protected function _parseChilds($childs, $parentNumber)
+    {
         $structure = [];
 
-        foreach($childs as $typeName => $associations) {
-            foreach($associations as $key => $association) {
+        foreach ($childs as $typeName => $associations) {
+            foreach ($associations as $key => $association) {
                 $associationName = $association['target']['alias'] . ' (' . $association['target']['table'] . ')';
                 $source = $association['source']['alias'] . ' (' . $association['source']['table'] . ')';
                 $target = $association['target'];
@@ -169,11 +181,11 @@ class StructureBuilderHelper extends Helper
                     'plugin' => $association['source']['location'],
                     'model' => $association['source']['model'],
                     'associationTarget' => $association['target']['model'],
-                    'associationTargetPlugin' => $association['target']['location']
+                    'associationTargetPlugin' => $association['target']['location'],
                 ];
 
-                if($this->getConfig('showDeepChildren')) {
-                    if(!empty($target['childs'])) {
+                if ($this->getConfig('showDeepChildren')) {
+                    if (!empty($target['childs'])) {
                         $structure = $structure + $this->_parseChilds($target['childs'], $this->count);
                     }
                 }
