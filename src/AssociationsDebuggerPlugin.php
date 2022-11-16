@@ -5,11 +5,11 @@ namespace AssociationsDebugger;
 
 use Cake\Console\CommandCollection;
 use Cake\Core\BasePlugin;
+use Cake\Core\Configure;
 use Cake\Core\ContainerInterface;
 use Cake\Core\PluginApplicationInterface;
 use Cake\Http\MiddlewareQueue;
 use Cake\Routing\RouteBuilder;
-use Cake\Core\Configure;
 
 /**
  * Plugin for AssociationsDebugger
