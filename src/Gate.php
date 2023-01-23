@@ -167,10 +167,10 @@ class Gate
     {
         $associationTypes = $this->getConfig('associationTypes');
 
-        if (empty($plugin) || strtolower($plugin == 'app')) {
-            $setModel = TableRegistry::get($model);
+        if (empty($plugin) || (!empty($plugin) && strtolower($plugin) == 'app')) {
+            $setModel = TableRegistry::getTableLocator()->get($model);
         } else {
-            $setModel = TableRegistry::get($plugin . '.' . $model);
+            $setModel = TableRegistry::getTableLocator()->get($plugin . '.' . $model);
         }
 
         $associationsArray = [];
