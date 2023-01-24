@@ -145,6 +145,9 @@ class Gate
                 // clean file name
                 $model = str_replace('.php', '', $model);
                 $model = str_replace('Table', '', $model);
+                if ($model === '') {
+                    continue;
+                }
                 $modelList[$model] = ['plugin' => $pluginName];
                 $associationsArray[$pluginName][$model] = $this->_associations($model, $pluginName);
             }
