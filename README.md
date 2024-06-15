@@ -4,12 +4,13 @@ AssociationsDebugger is a plugin that is made for debugging associations.
 The point of this plugin is to quickly show different associations of your CakePHP application without you needing to browse through the model files.
 
 CakePHP 3.x version can be found [here](https://github.com/zunnu/associations-debugger/tree/3.x)
+CakePHP 4.x version can be found [here](https://github.com/zunnu/associations-debugger/tree/4.x)
 
 ![Example](https://i.giphy.com/media/LylyHkulR8xTpDrapb/giphy.webp)
 
 ## Requirements
-* CakePHP 4.x
-* PHP 7.2 >
+* CakePHP 5.x
+* PHP 8.1 >
 
 ## Installing Using [Composer][composer]
 
