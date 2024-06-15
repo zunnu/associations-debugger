@@ -8,14 +8,14 @@ use DebugKit\DebugPanel;
 
 class AssociationsPanel extends DebugPanel
 {
-    public $plugin = 'AssociationsDebugger';
+    public string $plugin = 'AssociationsDebugger';
 
     /**
      * Get the panel data
      *
      * @return array
      */
-    public function data()
+    public function data(): array
     {
         $gate = new Gate();
 
