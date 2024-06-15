@@ -28,7 +28,6 @@ class AssociationsDebuggerPlugin extends BasePlugin
     public function bootstrap(PluginApplicationInterface $app): void
     {
         if (Configure::read('debug')) {
-            // dd(Configure::read('DebugKit.panels'));
             Configure::write('DebugKit.panels', ['AssociationsDebugger.Associations']);
         }
     }

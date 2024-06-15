@@ -5,7 +5,6 @@ namespace AssociationsDebugger;
 
 use Cake\Core\App;
 use Cake\Core\Plugin;
-use Cake\Filesystem\Folder;
 use Cake\ORM\TableRegistry;
 
 class Gate
@@ -180,7 +179,7 @@ class Gate
         $activePluginsLower = array_map('strtolower', $this->getPlugins());
 
         if ($associations = $setModel->associations()) {
-            foreach ($associations->normalizeKeys($associations->getIterator()) as $key => $association) {
+            foreach ($associations->getIterator() as $key => $association) {
                 $source = $association->getSource();
                 $sourceRegistery = 'App';
                 $targetRegistery = 'App';
@@ -292,8 +291,8 @@ class Gate
     {
         // find the models
         $path = $this->getPath($plugin);
-        $dir = new Folder($path[0]);
-        $models = $dir->find('.*Table\.php');
+        $modelsWithPath = glob($path[0] . '/*Table.php');
+        $models = array_map('basename', $modelsWithPath);
 
         return $models;
     }

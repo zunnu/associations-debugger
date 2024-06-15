@@ -9,8 +9,8 @@
 if (!isset($showDeepChildren)) {
     $showDeepChildren = true;
 }
-    $this->StructureBuilder = $this->loadHelper('AssociationsDebugger.StructureBuilder', ['showDeepChildren' => $showDeepChildren]);
-    $structure = $this->StructureBuilder->build($associationCollections);
+    $structureBuilder = $this->loadHelper('AssociationsDebugger.StructureBuilder', ['showDeepChildren' => $showDeepChildren]);
+    $structure = $structureBuilder->build($associationCollections);
 ?>
 
 <script type="text/javascript">

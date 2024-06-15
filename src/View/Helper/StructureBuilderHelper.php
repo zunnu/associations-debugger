@@ -15,7 +15,7 @@ class StructureBuilderHelper extends Helper
      *
      * @var array
      */
-    protected $_defaultConfig = [
+    protected array $_defaultConfig = [
         'showDeepChildren' => true,
     ];
 

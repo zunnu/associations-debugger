@@ -14,6 +14,13 @@ use AssociationsDebugger\Gate;
 class AssociationsController extends AppController
 {
     /**
+     * Gate instance
+     * 
+     * @var AssociationsDebugger\Gate
+     */
+    protected $Gate;
+
+    /**
      * initialize method
      *
      * @return void
